@@ -9,13 +9,14 @@ from datetime import datetime
 from tkinter import Tk
 from tkinter.filedialog import askopenfilename
 from tkinter.messagebox import showinfo
+from tkinter.messagebox import showerror
 
 # Get excel file location
 Tk().withdraw()
 showinfo(title="Message", message="Please select document index Excel file.")
 EXCEL = askopenfilename(filetypes=[("Excel files", "*.xlsx")])
 
-# Get excel file location
+# Get title page PDF file location
 Tk().withdraw()
 showinfo(title="Message", message="Please select blank title page PDF file.")
 PDF = askopenfilename(filetypes=[("PDF files", "*.pdf")])
@@ -40,15 +41,22 @@ sheet = wb["Index"]  # create sheet object
 try:
     newDoc = fitz.open(WORKING / PDF)
 except:
-    logFile.write("Cannot find pdf file.")
-    showinfo(title="Message", message="Cannot find PDF file.")
-    sys.exit("Cannot find pdf file.")
+    logFile.write("Error - Cannot open pdf file.")
+    logFile.close()
+    showerror(title="Error", message="Cannot open PDF file.")
+    sys.exit("Cannot open pdf file.")
+
+if int(newDoc.page_count) != 1:
+    logFile.write("Error - Blank title page PDF file has more than 1 page.")
+    logFile.close()
+    showerror(title="Error", message="Blank title page PDF file has more than 1 page.")
+    sys.exit("Blank title page PDF file has more than 1 page.")
 
 # pull global values from excel file
-OFFSET = sheet["B4"].value
+OFFSET = sheet["B3"].value
 PROJECT = Path(sheet["B1"].value)
-HEIGHT = sheet["B5"].value
-SIZE = sheet["B6"].value
+HEIGHT = sheet["B4"].value
+SIZE = sheet["B5"].value
 
 # set output paths
 OUTPUT = Path(str(sheet["B2"].value) + " OUTPUT.pdf")
@@ -79,7 +87,7 @@ ref = 1  # index for iterating through doc refs
 refs = {}  # dictionary for storing values from index file
 
 # iterate through index rows and assign values to dictionary
-for row in range(9, sheet.max_row + 1):
+for row in range(8, sheet.max_row + 1):
     sect = sheet["A" + str(row)].value
     lev = sheet["B" + str(row)].value
     head = sheet["C" + str(row)].value
@@ -91,18 +99,25 @@ for row in range(9, sheet.max_row + 1):
     if sect is None:  # break out of loop if all rows read
         break
 
-    refs.setdefault(
-        ref,
-        {
-            "sect": str(sect),
-            "lev": int(lev),
-            "head": head,
-            "rev": rev,
-            "fil": fil,
-            "titl": titl,
-            "tocs": tocs,
-        },
-    )
+    try:
+        refs.setdefault(
+            ref,
+            {
+                "sect": str(sect),
+                "lev": int(lev),
+                "head": head,
+                "rev": rev,
+                "fil": fil,
+                "titl": titl,
+                "tocs": tocs,
+            },
+        )
+    except:
+        logFile.write("\n**** Excel format incorrect ****\n")
+        showerror(title="Error", message="Excel format is incorrect.")
+        logFile.close()
+        sys.exit("Excel format incorrect")
+
     ref = ref + 1
 
 # create list of file references to check for missing or duplciate references
@@ -138,7 +153,7 @@ if len(duplicates) != 0:
             if i in j:
                 logFile.write(j + "\n")
     logFile.write("\n")
-    showinfo(title="Message", message="Duplicate file references found.")
+    showerror(title="Error", message="Duplicate file references found.")
     sys.exit("ERROR - Duplicates found.")
 
 # write missing refs to log file
@@ -147,7 +162,7 @@ if len(missing) != 0:
     for i in missing:
         logFile.write(i + "\n")
     logFile.write("\n")
-    showinfo(title="Message", message="Missing file references.")
+    showerror(title="Error", message="Missing file references.")
     sys.exit("ERROR - Missing references.")
 
 # check that table of contents levels can be written
@@ -155,7 +170,7 @@ for i in range(1, (len(refs)) + 1):
     if i == 1 and refs[i]["lev"] != 1:
         # check that TOC levels start at 1
         logFile.write("ERROR - Table of contents level does not start at 1.")
-        showinfo(title="Message", message="Table of contents does not start at 1.")
+        showerror(title="Error", message="Table of contents does not start at 1.")
         sys.exit("ERROR - Table of contents level does not start at 1.")
 
     # check that previous TOC level was higher or only jumped down 1
@@ -166,8 +181,8 @@ for i in range(1, (len(refs)) + 1):
             pass
         else:
             logFile.write("ERROR - Table of contents level jumps down more than 1.")
-            showinfo(
-                title="Message",
+            showerror(
+                title="Error",
                 message="Table of contents level jumps down more than 1 level.",
             )
             sys.exit("ERROR - Table of contents level jumps down more than 1.")
@@ -248,8 +263,8 @@ for index in refs:
                         f"\n**** Cannot find a file on the local harddrive: {i} ****\n"
                     )
                     fileerror = 1
-                    showinfo(
-                        title="Message",
+                    showerror(
+                        title="Error",
                         message="Cannot find file on harddrive - check log file.",
                     )
                     print("Error finding file " + fil)
@@ -263,8 +278,8 @@ except:
         "\n**** Cannot write TOC to PDF, check you are not jumping down more than one level. ****\n"
     )
     tocerror = 1
-    showinfo(
-        title="Message",
+    showerror(
+        title="Error",
         message="Cannot write TOC to PDF, check you are not jumping down more than one level.",
     )
 
@@ -293,20 +308,20 @@ else:
     c = (1, 0, 0)
     newDoc[0].insertText(p, t, fontsize=30, color=c)
     OUTPUT = OUTPUTERROR
-    showinfo(title="Message", message="Document not complete, please check log file.")
+    showerror(title="Error", message="Document not complete, please check log file.")
 
 # save the final pdf and close down working files
 try:
     newDoc.save(WORKING / OUTPUT, garbage=4, deflate=1)
     newDoc.close()
-    showinfo(
-        title="Message",
+    showerror(
+        title="Error",
         message="New MRB file saved.\nPlease check log file for any error messages.",
     )
 except:
     logFile.write("\n**** PDF is locked for editing! Cannot Create new PDF ****\n")
-    showinfo(
-        title="Message", message="PDF is locked for editing! Cannot Create new PDF."
+    showerror(
+        title="Error", message="PDF is locked for editing! Cannot Create new PDF."
     )
 wb.close()
 logFile.close()
