@@ -15,6 +15,11 @@ Tk().withdraw()
 showinfo(title="Message", message="Please select document index Excel file.")
 EXCEL = askopenfilename(filetypes=[("Excel files", "*.xlsx")])
 
+# Get excel file location
+Tk().withdraw()
+showinfo(title="Message", message="Please select blank title page PDF file.")
+PDF = askopenfilename(filetypes=[("PDF files", "*.pdf")])
+
 # Set working directory to excel file location
 WORKING = Path(EXCEL).parent.absolute()
 
@@ -32,7 +37,6 @@ wb = openpyxl.load_workbook(EXCEL, data_only=True)
 sheet = wb["Index"]  # create sheet object
 
 # check for blank pdf and throw error if not found
-PDF = Path(sheet["B3"].value)
 try:
     newDoc = fitz.open(WORKING / PDF)
 except:
@@ -274,7 +278,7 @@ if len(missing) == 0 and len(duplicates) == 0 and tocerror == 0 and fileerror ==
     tocTitle = "Table of Contents"
     p = fitz.Point(230, HEIGHT)  # This is the position of 'table of contents' (x, y)
     p1 = fitz.Point(40, HEIGHT + 20)  # This is the position of the headings (x, y)
-    p2 = fitz.Point(450, HEIGHT + 20)  # This is the position of the revisions (x, y)
+    p2 = fitz.Point(425, HEIGHT + 20)  # This is the position of the revisions (x, y)
     p3 = fitz.Point(500, HEIGHT + 20)  # This is the position of the page numbers (x, y)
 
     newDoc[0].insertText(p, tocTitle, fontsize=15)
@@ -295,7 +299,10 @@ else:
 try:
     newDoc.save(WORKING / OUTPUT, garbage=4, deflate=1)
     newDoc.close()
-    showinfo(title="Message", message="Successfully created MRB.")
+    showinfo(
+        title="Message",
+        message="New MRB file saved.\nPlease check log file for any error messages.",
+    )
 except:
     logFile.write("\n**** PDF is locked for editing! Cannot Create new PDF ****\n")
     showinfo(
