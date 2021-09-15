@@ -57,6 +57,8 @@ OFFSET = sheet["B3"].value
 PROJECT = Path(sheet["B1"].value)
 HEIGHT = sheet["B4"].value
 SIZE = sheet["B5"].value
+C_RED = (1, 0, 0)
+C_BLACK = (0, 0, 0)
 
 # set output paths
 OUTPUT = Path(str(sheet["B2"].value) + " OUTPUT.pdf")
@@ -207,11 +209,11 @@ def title_page(section, title):
     tempPage = blankPage[0]  # select page
     p1 = fitz.Point(50, 400)  # set section heading position
     t1 = f"Section {section}"  # section heading text
-    tempPage.insertText(p1, t1, fontsize=25)  # add section geading text
+    tempPage.insertText(p1, t1, fontsize=25, color=C_BLACK)  # add section geading text
     p2 = fitz.Point(50, 450)  # set section title position
     wrapper = textwrap.TextWrapper(width=30)  # wrap section title text
     t2 = wrapper.wrap(text=title)
-    tempPage.insertText(p2, t2, fontsize=25)  # add section title text
+    tempPage.insertText(p2, t2, fontsize=25, color=C_BLACK)  # add section title text
     return blankPage
 
 
@@ -296,17 +298,16 @@ if len(missing) == 0 and len(duplicates) == 0 and tocerror == 0 and fileerror ==
     p2 = fitz.Point(425, HEIGHT + 20)  # This is the position of the revisions (x, y)
     p3 = fitz.Point(500, HEIGHT + 20)  # This is the position of the page numbers (x, y)
 
-    newDoc[0].insertText(p, tocTitle, fontsize=15)
-    newDoc[0].insertText(p1, tocSection, fontsize=SIZE)
-    newDoc[0].insertText(p2, tocRev, fontsize=SIZE)
-    newDoc[0].insertText(p3, tocPageNo, fontsize=SIZE)
+    newDoc[0].insertText(p, tocTitle, fontsize=15, color=C_BLACK)
+    newDoc[0].insertText(p1, tocSection, fontsize=SIZE, color=C_BLACK)
+    newDoc[0].insertText(p2, tocRev, fontsize=SIZE, color=C_BLACK)
+    newDoc[0].insertText(p3, tocPageNo, fontsize=SIZE, color=C_BLACK)
 
 # if there were duplicate or missing refs, or table of contents errors, write warning message to first page
 else:
     t = "**** Document not complete ****\n\n****** Please check log file ******"
     p = fitz.Point(100, 300)
-    c = (1, 0, 0)
-    newDoc[0].insertText(p, t, fontsize=30, color=c)
+    newDoc[0].insertText(p, t, fontsize=30, color=C_RED)
     OUTPUT = OUTPUTERROR
     showerror(title="Error", message="Document not complete, please check log file.")
 
