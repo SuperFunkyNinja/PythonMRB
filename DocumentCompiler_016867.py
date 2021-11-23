@@ -6,27 +6,11 @@ import sys
 from pathlib import Path
 from glob import glob
 from datetime import datetime
-from tkinter import Tk
-from tkinter.filedialog import askopenfilename
-from tkinter.messagebox import showinfo
 from tkinter.messagebox import showerror
 
-"""
-# Get excel file location
-Tk().withdraw()
-showinfo(title="Message", message="Please select document index Excel file.")
-EXCEL = askopenfilename(filetypes=[("Excel files", "*.xlsx")])
-"""
 EXCEL = Path(
     r"C:\EPDMVault\Projects\Current\016867s L&T Hydrocarbon Saudi\04 - Final Manual Books\MRB Books\016867 - MRB index.xlsx"
 )
-
-"""
-# Get title page PDF file location
-Tk().withdraw()
-showinfo(title="Message", message="Please select blank title page PDF file.")
-PDF = askopenfilename(filetypes=[("PDF files", "*.pdf")])
-"""
 
 # Set working directory to excel file location
 WORKING = Path(EXCEL).parent.absolute()
