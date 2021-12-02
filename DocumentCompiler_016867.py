@@ -14,14 +14,9 @@ from tkinter.messagebox import showerror
 
 
 EXCEL = Path(
-    r"C:\EPDMVault\Projects\Current\016867s L&T Hydrocarbon Saudi\04 - Final Manual Books\MRB Books\016867 - Purchased MRB index.xlsx"
+    r"C:\EPDMVault\Projects\Current\016867s L&T Hydrocarbon Saudi\04 - Final Manual Books\MRB Books\016867 - Baseframe MRB index.xlsx"
 )
-"""
 
-EXCEL = Path(
-    r"C:\EPDMVault\Projects\Current\016867s L&T Hydrocarbon Saudi\04 - Final Manual Books\MRB Books\016867 - MRB index.xlsx"
-)
-"""
 
 # Set working directory to excel file location
 WORKING = Path(EXCEL).parent.absolute()
